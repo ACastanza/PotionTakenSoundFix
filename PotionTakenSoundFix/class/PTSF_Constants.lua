@@ -24,8 +24,9 @@ PTSF.soundCategoryPotTaken 				= 1
 PTSF.soundCategoryPotionLostBuff		= 2
 PTSF.soundCategoryPotionCooldownEnded	= 3
 PTSF.soundCategoryLowHealth 			= 4
-PTSF.soundCategoryLowStamina 			= 5
-PTSF.soundCategoryLowMagicka 			= 6
+PTSF.soundCategoryLowHealth 			= 5
+PTSF.soundCategoryLowStamina 			= 6
+PTSF.soundCategoryLowMagicka 			= 7
 --=============================================================================================================
 --	Debug functions {{{ They're here since this is the 1st file loading
 --=============================================================================================================

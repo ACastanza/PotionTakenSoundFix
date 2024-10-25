@@ -31,7 +31,14 @@ function PTSF.loadSettings()
         lowHealthSound					= 1, --NONE (slider value)
         lowHealthVolumeBoost			= 1, --default game volume
         
-        lowStaminaPercent				= 0, --%
+        lowUltimatePercent              = 0, --%
+        isOKUltimatePercent             = 70, --% for our "out of low" condition. Helps in minimizing sound/auto-slot calls
+        isOKUltimateRepeatDelay         = 3, --seconds to delay sound/auto-slot from when we're out of low condition and back to low. On that second low, will wait before making sound/auto-slot calls (helps to prevent multiple calls too close to each other)
+        lowUltimateAutoSlot             = 0, --No
+        lowUltimateSound                = 1, --NONE (slider value)
+        lowUltimateVolumeBoost          = 1, --default game volume
+
+        lowStaminaPercent                    = 0, --%
         isOKStaminaPercent				= 50, --% for our "out of low" condition. Helps in minimizing sound/auto-slot calls
         isOKStaminaRepeatDelay			= 3, --seconds to delay sound/auto-slot from when we're out of low condition and back to low. On that second low, will wait before making sound/auto-slot calls (helps to prevent multiple calls too close to each other)
         lowStaminaAutoSlot				= 0, --No
@@ -62,6 +69,10 @@ function PTSF.loadSettings()
         TTC_lowHPText					= "Low Health",
         TTC_HPRecoveredEnable			= false,
         TTC_HPRecoveredText				= "Health Recovered",
+        TTC_lowUltEnable 				= false,
+        TTC_lowUltText					= "Low Ultimate",
+        TTC_UltRecoveredEnable			= false,
+        TTC_UltRecoveredText            = "Ultimate Recovered",
         TTC_lowStamEnable 				= false,
         TTC_lowStamText					= "Low Stamina",
         TTC_StamRecoveredEnable			= false,

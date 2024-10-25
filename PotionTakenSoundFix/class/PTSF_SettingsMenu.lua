@@ -15,7 +15,8 @@ function PTSF.buildAddonMenu()
     local lockSoundPlay_BuffLost				= false
     local lockSoundPlay_Cooldown 				= false
     local lockSoundPlay_Health 					= false --new 1.08
-    local lockSoundPlay_Stamina 				= false	 --new 1.08
+    local lockSoundPlay_Ultimate 				= false --new 1.20
+    local lockSoundPlay_Stamina 				= false	--new 1.08
     local lockSoundPlay_Magicka					= false --new 1.08
 
     PTSF.panelData    = {
@@ -62,7 +63,8 @@ local function updateDisabledControl(control, soundEnded)
     	lockSoundPlay_BuffLost	= false
     	lockSoundPlay_Cooldown 	= false
 		lockSoundPlay_Health 	= false --new 1.08
-		lockSoundPlay_Stamina 	= false	 --new 1.08
+		lockSoundPlay_Ultimate 	= false --new 1.20
+		lockSoundPlay_Stamina 	= false	--new 1.08
 		lockSoundPlay_Magicka	= false --new 1.08
     end
     if(not control) then
@@ -121,6 +123,7 @@ end --}}}
             PotionTakenSoundFix_Settings_potionLostBuffSound.label:SetText("Sound: " .. PTSF.sounds[settings.potionLostBuffSound])
             PotionTakenSoundFix_Settings_potionCooldownEndedSound.label:SetText("Sound: " .. PTSF.sounds[settings.potionCooldownEndedSound])
             PotionTakenSoundFix_Settings_lowHealthSound.label:SetText("Sound: " .. PTSF.sounds[settings.lowHealthSound])
+            PotionTakenSoundFix_Settings_lowUltimateSound.label:SetText("Sound: " .. PTSF.sounds[settings.lowUltimateSound])
             PotionTakenSoundFix_Settings_lowStaminaSound.label:SetText("Sound: " .. PTSF.sounds[settings.lowStaminaSound])
             PotionTakenSoundFix_Settings_lowMagickaSound.label:SetText("Sound: " .. PTSF.sounds[settings.lowMagickaSound])
             --Set the color on dev's fav buttons
@@ -128,20 +131,26 @@ end --}}}
             PotionTakenSoundFix_Settings_devPotionLostBuffButton.button:SetNormalFontColor(0,0.75,0.61,1)
             PotionTakenSoundFix_Settings_devPotionCooldownEndedButton.button:SetNormalFontColor(0,0.75,0.61,1)
             PotionTakenSoundFix_Settings_devlowHealthButton.button:SetNormalFontColor(0,0.75,0.61,1)
-            PotionTakenSoundFix_Settings_devlowStaminaButton.button:SetNormalFontColor(0,0.75,0.61,1)
+			PotionTakenSoundFix_Settings_devlowUltimateButton.button:SetNormalFontColor(0, 0.75, 0.61, 1)
+			PotionTakenSoundFix_Settings_devlowStaminaButton.button:SetNormalFontColor(0, 0.75, 0.61, 1)
             PotionTakenSoundFix_Settings_devlowMagickaButton.button:SetNormalFontColor(0,0.75,0.61,1)
             --Set the color on volume boost's warning icons
             PotionTakenSoundFix_Settings_potionTakenVolumeBoost.warning:SetColor(1,0.65,0,1)
             PotionTakenSoundFix_Settings_potionLostBuffVolumeBoost.warning:SetColor(1,0.65,0,1)
             PotionTakenSoundFix_Settings_potionCooldownEndedVolumeBoost.warning:SetColor(1,0.65,0,1)
             PotionTakenSoundFix_Settings_lowHealthVolumeBoost.warning:SetColor(1,0.65,0,1)
-            PotionTakenSoundFix_Settings_lowStaminaVolumeBoost.warning:SetColor(1,0.65,0,1)
+			PotionTakenSoundFix_Settings_lowUltimateVolumeBoost.warning:SetColor(1, 0.65, 0, 1)
+			PotionTakenSoundFix_Settings_lowStaminaVolumeBoost.warning:SetColor(1, 0.65, 0, 1)
             PotionTakenSoundFix_Settings_lowMagickaVolumeBoost.warning:SetColor(1,0.65,0,1)
             --1.08 Special slider values
             --Health
             PotionTakenSoundFix_Settings_isOKHealthPercent.slider:SetMinMax(settings.lowHealthPercent, 100)
 			PotionTakenSoundFix_Settings_isOKHealthPercent.minText:SetText(settings.lowHealthPercent)
 			PotionTakenSoundFix_Settings_isOKHealthPercent:UpdateValue(false, settings.isOKHealthPercent < settings.lowHealthPercent and settings.lowHealthPercent or settings.isOKHealthPercent)
+            --Ultimate
+			PotionTakenSoundFix_Settings_isOKUltimatePercent.slider:SetMinMax(settings.lowUltimatePercent, 100)
+			PotionTakenSoundFix_Settings_isOKUltimatePercent.minText:SetText(settings.lowUltimatePercent)
+			PotionTakenSoundFix_Settings_isOKUltimatePercent:UpdateValue(false, settings.isOKUltimatePercent < settings.lowUltimatePercent and settings.lowUltimatePercent or settings.isOKUltimatePercent)
 			--Stamina
 			PotionTakenSoundFix_Settings_isOKStaminaPercent.slider:SetMinMax(settings.lowStaminaPercent, 100)
 			PotionTakenSoundFix_Settings_isOKStaminaPercent.minText:SetText(settings.lowStaminaPercent)
@@ -156,7 +165,7 @@ end --}}}
                	PotionTakenSoundFix_Settings_Potionbufflostfilters.animation:PlayFromEnd()
             end
             --Open the low resources submenu
-            if(settings.lowHealthPercent > 0 or settings.lowStaminaPercent > 0 or settings.lowMagickaPercent > 0) then
+			if (settings.lowHealthPercent > 0 or settings.lowUltimatePercent > 0 or settings.lowStaminaPercent > 0 or settings.lowMagickaPercent > 0) then
             	PotionTakenSoundFix_Settings_LowResources_submenu.open = true
                	PotionTakenSoundFix_Settings_LowResources_submenu.animation:PlayFromEnd()
             end
@@ -595,7 +604,8 @@ end --}}}
 				{
 					type = 'slider',
 					name = "Low |cCC0000Health|r Auto-Select Quickslot:",
-					tooltip = "Will auto-select quickslot, 1 is topmost (noon) going clockwise up to 8\n\nIf more than 1 resource becomes low, priority order is:\n1-|cCC0000Health|r\n2-|c4F9A95Stamina|r\n3-|c5882B7Magicka|r\n\nIt will auto-select this quickslot every time you hear the low |cCC0000Health|r sound\n\nSlide to 0 to disable",
+					tooltip =
+					"Will auto-select quickslot, 1 is topmost (noon) going clockwise up to 8\n\nIf more than 1 resource becomes low, priority order is:\n1-|cCC0000Health|r\n2-|cFFFFFFUltimate|r\n3-|c4F9A95Stamina|r\n4-|c5882B7Magicka|r\n\nIt will auto-select this quickslot every time you hear the low |c4F9A95Stamina|r sound, unless there is already a low |cCC0000Health|r condition AND quickslotting is enabled on low |cCC0000Health|r\n\nSlide to 0 to disable",
 					min = 0,
 					max = 8,
 					getFunc = function()
@@ -682,6 +692,232 @@ end --}}}
 					func = function() setControlValues(PotionTakenSoundFix_Settings_lowHealthPercent, 40, true) setControlValues(PotionTakenSoundFix_Settings_isOKHealthPercent, 90, true) setControlValues(PotionTakenSoundFix_Settings_isOKHealthRepeatDelay, 3, true) setControlValues(PotionTakenSoundFix_Settings_lowHealthSound, 59, true) setControlValues(PotionTakenSoundFix_Settings_lowHealthVolumeBoost, 5) end,
 					width = "half",
 					reference = "PotionTakenSoundFix_Settings_devlowHealthButton",
+				}, --}}}
+				--Ultimate
+				{
+					type = 'header',
+					name = "|cFFFFFFLow Ultimate|r",
+				},
+				{
+					type = 'slider',
+					name = "Low |cFFFFFFUltimate|r Threshold:",
+					tooltip =
+					"Plays selected sound and/or auto-quickslot when your |cFFFFFFUltimate|r is at or below this %\n\nSlide to 0 to disable",
+					min = 0,
+					max = 99,
+					getFunc = function()
+						if (settings.lowUltimatePercent == 0) then
+							PotionTakenSoundFix_Settings_lowUltimatePercent.label:SetText(
+							"Low |cFFFFFFUltimate|r Threshold: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_lowUltimatePercent.label:SetText(
+							"Low |cFFFFFFUltimate|r Threshold: <=" .. settings.lowUltimatePercent .. "%")
+						end
+						return settings.lowUltimatePercent
+					end,
+					setFunc = function(idx)
+						settings.lowUltimatePercent = idx
+						PTSF.register_or_unregister_low_resources_events()
+						--if(settings.isOKUltimatePercent < idx) then
+						--	settings.isOKUltimatePercent = idx
+						--end
+						PotionTakenSoundFix_Settings_isOKUltimatePercent.slider:SetMinMax(idx, 100)
+						PotionTakenSoundFix_Settings_isOKUltimatePercent.minText:SetText(idx)
+						PotionTakenSoundFix_Settings_isOKUltimatePercent:UpdateValue(false,
+							settings.isOKUltimatePercent < idx and idx or settings.isOKUltimatePercent)
+						if (idx == 0) then
+							PotionTakenSoundFix_Settings_lowUltimatePercent.label:SetText(
+							"Low |cFFFFFFUltimate|r Threshold: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_lowUltimatePercent.label:SetText(
+							"Low |cFFFFFFUltimate|r Threshold: <=" .. idx .. "%")
+						end
+					end,
+					default = defaults.lowUltimatePercent,
+					reference = "PotionTakenSoundFix_Settings_lowUltimatePercent",
+				},
+				{
+					type = 'slider',
+					name = "OK |cFFFFFFUltimate|r Threshold:",
+					tooltip =
+					"Will need this much |cFFFFFFUltimate|r % to get out of low |cFFFFFFUltimate|r condition. When |cFFFFFFUltimate|r varies up and down quickly, it helps minimizing repeated sound/auto-quickslot calls.\n\nToo high might prevent desired subsequent warnings and since |cFFFFFFUltimate|r is #1 priority, might also prevent desired stamina/magicka auto-quickslotting.\n\nSlide equal to Low |cFFFFFFUltimate|r Threshold to disable",
+					min = 1, --settings.lowUltimatePercent or
+					max = 100,
+					getFunc = function()
+						if (settings.isOKUltimatePercent == settings.lowUltimatePercent) then
+							PotionTakenSoundFix_Settings_isOKUltimatePercent.label:SetText(
+							"OK |cFFFFFFUltimate|r Threshold: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_isOKUltimatePercent.label:SetText(
+							"OK |cFFFFFFUltimate|r Threshold: >=" .. settings.isOKUltimatePercent .. "%")
+						end
+						return settings.isOKUltimatePercent
+					end,
+					setFunc = function(idx)
+						settings.isOKUltimatePercent = idx
+						if (idx == settings.lowUltimatePercent) then
+							PotionTakenSoundFix_Settings_isOKUltimatePercent.label:SetText(
+							"OK |cFFFFFFUltimate|r Threshold: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_isOKUltimatePercent.label:SetText(
+							"OK |cFFFFFFUltimate|r Threshold: >=" .. idx .. "%")
+						end
+					end,
+					disabled = function() return settings.lowUltimatePercent == 0 end,
+					default = defaults.isOKUltimatePercent,
+					reference = "PotionTakenSoundFix_Settings_isOKUltimatePercent",
+				},
+				{
+					type = 'slider',
+					name = "Anti-Repeat Delay:",
+					tooltip =
+					"When quickly switching from low to OK to low resource condition, delays repeating sound/auto-quickslot by this many seconds",
+					min = 0, --settings.lowUltimatePercent or
+					max = 30,
+					getFunc = function()
+						if (settings.isOKUltimateRepeatDelay == 0) then
+							PotionTakenSoundFix_Settings_isOKUltimateRepeatDelay.label:SetText(
+							"Anti-Repeat Delay: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_isOKUltimateRepeatDelay.label:SetText("Anti-Repeat Delay: " ..
+							settings.isOKUltimateRepeatDelay .. "s")
+						end
+						return settings.isOKUltimateRepeatDelay
+					end,
+					setFunc = function(idx)
+						settings.isOKUltimateRepeatDelay = idx
+						if (idx == 0) then
+							PotionTakenSoundFix_Settings_isOKUltimateRepeatDelay.label:SetText(
+							"Anti-Repeat Delay: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_isOKUltimateRepeatDelay.label:SetText("Anti-Repeat Delay: " ..
+							idx .. "s")
+						end
+					end,
+					disabled = function() return settings.lowUltimatePercent == 0 end,
+					default = defaults.isOKUltimateRepeatDelay,
+					reference = "PotionTakenSoundFix_Settings_isOKUltimateRepeatDelay",
+				},
+				{
+					type = 'slider',
+					name = "Low |cFFFFFFUltimate|r Auto-Select Quickslot:",
+					tooltip =
+					"Will auto-select quickslot, 1 is topmost (noon) going clockwise up to 8\n\nIf more than 1 resource becomes low, priority order is:\n1-|cCC0000Health|r\n2-|cFFFFFFUltimate|r\n3-|c4F9A95Stamina|r\n4-|c5882B7Magicka|r\n\nIt will auto-select this quickslot every time you hear the low |c4F9A95Stamina|r sound, unless there is already a low |cCC0000Health|r condition AND quickslotting is enabled on low |cCC0000Health|r\n\nSlide to 0 to disable",
+					min = 0,
+					max = 8,
+					getFunc = function()
+						if (settings.lowUltimateAutoSlot == 0) then
+							PotionTakenSoundFix_Settings_lowUltimateAutoSlot.label:SetText(
+							"Low |cFFFFFFUltimate|r Auto-Select Quickslot: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_lowUltimateAutoSlot.label:SetText(
+							"Low |cFFFFFFUltimate|r Auto-Select Quickslot: " .. settings.lowUltimateAutoSlot)
+						end
+						return settings.lowUltimateAutoSlot
+					end,
+					setFunc = function(idx)
+						settings.lowUltimateAutoSlot = idx
+						if (idx == 0) then
+							PotionTakenSoundFix_Settings_lowUltimateAutoSlot.label:SetText(
+							"Low |cFFFFFFUltimate|r Auto-Select Quickslot: (Disabled)")
+						else
+							PotionTakenSoundFix_Settings_lowUltimateAutoSlot.label:SetText(
+							"Low |cFFFFFFUltimate|r Auto-Select Quickslot: " .. idx)
+						end
+					end,
+					disabled = function() return settings.lowUltimatePercent == 0 end,
+					default = defaults.lowUltimateAutoSlot,
+					reference = "PotionTakenSoundFix_Settings_lowUltimateAutoSlot",
+				},
+				--Low Ultimate sound
+				{
+					type = 'slider',
+					name = "Sound:",
+					tooltip =
+					"Plays this sound when your |cFFFFFFUltimate|r reaches selected Low |cFFFFFFUltimate|r Threshold %\n\nSlide to 1 (NONE) to disable",
+					min = 1,
+					max = #PTSF.sounds - 1,
+					getFunc = function()
+						return settings.lowUltimateSound - 1
+					end,
+					setFunc = function(idx, doNotPlaySound)
+						idx = idx + 1 --Tricking the system so we don't use sound #1 as it's default potion sound
+						settings.lowUltimateSound = idx
+						PotionTakenSoundFix_Settings_lowUltimateSound.label:SetText("Sound: " .. PTSF.sounds[idx])
+						if SOUNDS ~= nil and not doNotPlaySound then --Minor bug: "Game's restore defaults" will play it twice since it doesn't throw our doNotPlaySound value
+							if (idx > 2 and SOUNDS[PTSF.sounds[idx]] ~= nil) then
+								PlaySound(SOUNDS[PTSF.sounds[idx]])
+								PTSF.D("Played: " .. SOUNDS[PTSF.sounds[settings.lowUltimateSound]])
+							end
+						end
+					end,
+					disabled = function() return settings.lowUltimatePercent == 0 end,
+					default = defaults.lowUltimateSound,
+					reference = "PotionTakenSoundFix_Settings_lowUltimateSound",
+				},
+				{
+					type = 'slider',
+					name = "Volume Booster",
+					tooltip =
+					"Boost this sound's volume by a factor of this slider value\n\n|cFFA500Please see WARNING (triangle)|r",
+					min = 1,
+					max = 10,
+					getFunc = function()
+						return settings.lowUltimateVolumeBoost
+					end,
+					setFunc = function(idy)
+						settings.lowUltimateVolumeBoost = idy
+						if (SOUNDS ~= nil and settings.lowUltimateSound > 2 and SOUNDS[PTSF.sounds[settings.lowUltimateSound]] ~= nil) then
+							for i = 1, idy do
+								PTSF.D(i .. "-LoopPlayed: " .. SOUNDS[PTSF.sounds[settings.lowUltimateSound]])
+								PlaySound(SOUNDS[PTSF.sounds[settings.lowUltimateSound]])
+							end
+							lockSoundPlay_Ultimate = true
+							zo_callLater(
+							function() updateDisabledControl(PotionTakenSoundFix_Settings_lowUltimateVolumeBoost,
+									lockSoundPlay_Ultimate) end, 1000)
+						end
+					end,
+					disabled = function() return settings.lowUltimateSound <= 2 or lockSoundPlay_Ultimate or
+						settings.lowUltimatePercent == 0 end,
+					default = defaults.lowUltimateVolumeBoost,
+					reference = "PotionTakenSoundFix_Settings_lowUltimateVolumeBoost",
+					warning =
+					"|cFFA500WARNING:|r This is meant to help boost up the volume of softer sounds, but seriously watch your speakers cranking it up on an already loud sound\n\nGenerally speaking, a boost of up to 6 is a lot, please be cautious!",
+				},
+				{
+					type = "button",
+					name = "Addon's Default",
+					tooltip = "Set this addon's default values",
+					func = function()
+						setControlValues(PotionTakenSoundFix_Settings_lowUltimatePercent,
+							PTSF.settingsVars.defaults.lowUltimatePercent, true)
+						setControlValues(PotionTakenSoundFix_Settings_isOKUltimatePercent,
+							PTSF.settingsVars.defaults.isOKUltimatePercent, true)
+						setControlValues(PotionTakenSoundFix_Settings_isOKUltimateRepeatDelay,
+							PTSF.settingsVars.defaults.isOKUltimateRepeatDelay, true)
+						setControlValues(PotionTakenSoundFix_Settings_lowUltimateAutoSlot,
+							PTSF.settingsVars.defaults.lowUltimateAutoSlot, true)
+						setControlValues(PotionTakenSoundFix_Settings_lowUltimateSound,
+							PTSF.settingsVars.defaults.lowUltimateSound, true)
+						setControlValues(PotionTakenSoundFix_Settings_lowUltimateVolumeBoost,
+							PTSF.settingsVars.defaults.lowUltimateVolumeBoost)
+					end,
+					width = "half",
+				},
+				{
+					type = "button",
+					name = "|c00BF9CDev's Fav|r",
+					tooltip = "Set " .. addonVars.addonAuthor .. "'s favorite values",
+					func = function()
+						setControlValues(PotionTakenSoundFix_Settings_lowUltimatePercent, 40, true)
+						setControlValues(PotionTakenSoundFix_Settings_isOKUltimatePercent, 90, true)
+						setControlValues(PotionTakenSoundFix_Settings_isOKUltimateRepeatDelay, 3, true)
+						setControlValues(PotionTakenSoundFix_Settings_lowUltimateSound, 59, true)
+						setControlValues(PotionTakenSoundFix_Settings_lowUltimateVolumeBoost, 5)
+					end,
+					width = "half",
+					reference = "PotionTakenSoundFix_Settings_devlowUltimateButton",
 				}, --}}}
 				--Stamina
             	{
@@ -775,7 +1011,8 @@ end --}}}
 				{
 					type = 'slider',
 					name = "Low |c4F9A95Stamina|r Auto-Select Quickslot:",
-					tooltip = "Will auto-select quickslot, 1 is topmost (noon) going clockwise up to 8\n\nIf more than 1 resource becomes low, priority order is:\n1-|cCC0000Health|r\n2-|c4F9A95Stamina|r\n3-|c5882B7Magicka|r\n\nIt will auto-select this quickslot every time you hear the low |c4F9A95Stamina|r sound, unless there is already a low |cCC0000Health|r condition AND quickslotting is enabled on low |cCC0000Health|r\n\nSlide to 0 to disable",
+					tooltip =
+					"Will auto-select quickslot, 1 is topmost (noon) going clockwise up to 8\n\nIf more than 1 resource becomes low, priority order is:\n1-|cCC0000Health|r\n2-|cFFFFFFUltimate|r\n3-|c4F9A95Stamina|r\n4-|c5882B7Magicka|r\n\nIt will auto-select this quickslot every time you hear the low |c4F9A95Stamina|r sound, unless there is already a low |cCC0000Health|r condition AND quickslotting is enabled on low |cCC0000Health|r\n\nSlide to 0 to disable",
 					min = 0,
 					max = 8,
 					getFunc = function()
@@ -955,7 +1192,8 @@ end --}}}
 				{
 					type = 'slider',
 					name = "Low |c5882B7Magicka|r Auto-Select Quickslot:",
-					tooltip = "Will auto-select quickslot, 1 is topmost (noon) going clockwise up to 8\n\nIf more than 1 resource becomes low, priority order is:\n1-|cCC0000Health|r\n2-|c4F9A95Stamina|r\n3-|c5882B7Magicka|r\n\nIt will auto-select this quickslot every time you hear the low |c5882B7Magicka|r sound, unless there is already low |cCC0000Health|r and/or low |c4F9A95Stamina|r condition(s) AND they have their auto-quickslotting enabled\n\nEXAMPLE:\nIf you disable |c4F9A95Stamina|r auto-quickslotting, then auto-quickslot priority becomes:\n1-|cCC0000Health|r\n2-|c5882B7Magicka|r\n\nSlide to 0 to disable",
+					tooltip =
+					"Will auto-select quickslot, 1 is topmost (noon) going clockwise up to 8\n\nIf more than 1 resource becomes low, priority order is:\n1-|cCC0000Health|r\n2-|cFFFFFFUltimate|r\n3-|c4F9A95Stamina|r\n4-|c5882B7Magicka|r\n\nIt will auto-select this quickslot every time you hear the low |c4F9A95Stamina|r sound, unless there is already a low |cCC0000Health|r condition AND quickslotting is enabled on low |cCC0000Health|r\n\nSlide to 0 to disable",
 					min = 0,
 					max = 8,
 					getFunc = function()
@@ -1288,6 +1526,49 @@ end --}}}
                	width = "half",
             },
             {
+            	type = "checkbox",
+            	name = "Low |cCC0000Ultimate|r Enable",
+            	tooltip = "Enables text-to-chat when your |cCC0000ultimate|r is low.\n\nLow |cCC0000ultimate|r threshold HAS to be enabled under Low Resources settings (to more than 0)",
+            	getFunc = function() return settings.TTC_lowUltEnable end,
+            	setFunc = function(value) settings.TTC_lowUltEnable = value end,
+               	default = defaults.TTC_lowUltEnable,
+               	disabled = function() return settings.lowUltimatePercent == 0 end,
+               	width = "half",
+            },
+            {
+            	type = "editbox",
+            	name = "Low |cCC0000Ultimate|r Text",
+            	tooltip = "Text-to-chat when your |cCC0000ultimate|r is low.\n\nLow |cCC0000ultimate|r threshold HAS to be enabled under Low Resources settings (to more than 0)",
+            	getFunc = function() return settings.TTC_lowUltText end,
+            	setFunc = function(value) settings.TTC_lowUltText = value end,
+                isMultiline = false,	--boolean
+                maxChars = 60,
+                default = defaults.TTC_lowUltText,
+                disabled = function() return settings.lowUltimatePercent == 0 end,
+               	width = "half",
+            },
+            {
+            	type = "checkbox",
+            	name = "|cCC0000Ultimate|r Recovered Enable",
+            	tooltip = "Enables text-to-chat when your |cCC0000ultimate|r is recovered to its 'OK' threshold.\n\nLow |cCC0000ultimate|r threshold HAS to be enabled under Low Resources settings (to more than 0)",
+            	getFunc = function() return settings.TTC_UltRecoveredEnable end,
+            	setFunc = function(value) settings.TTC_UltRecoveredEnable = value end,
+               	default = defaults.TTC_UltRecoveredEnable,
+               	disabled = function() return settings.lowUltimatePercent == 0 end,
+               	width = "half",
+            },
+            {
+            	type = "editbox",
+            	name = "|cCC0000Ultimate|r Recovered Text",
+            	tooltip = "Text-to-chat when your |cCC0000ultimate|r is recovered to its 'OK' threshold.\n\nLow |cCC0000ultimate|r threshold HAS to be enabled under Low Resources settings (to more than 0)",
+            	getFunc = function() return settings.TTC_UltRecoveredText end,
+            	setFunc = function(value) settings.TTC_UltRecoveredText = value end,
+                isMultiline = false,	--boolean
+                maxChars = 60,
+                default = defaults.TTC_UltRecoveredText,
+                disabled = function() return settings.lowUltimatePercent == 0 end,
+               	width = "half",
+            },            {
             	type = "checkbox",
             	name = "Low |c4F9A95Stamina|r Enable",
             	tooltip = "Enables text-to-chat when your |c4F9A95stamina|r is low.\n\nLow |c4F9A95stamina|r threshold HAS to be enabled under Low Resources settings (to more than 0)",

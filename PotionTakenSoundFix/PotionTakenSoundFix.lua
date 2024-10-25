@@ -5,7 +5,7 @@ local PTSF = PotionTakenSoundFix
 --=============================================================================================================
 
 PTSF.addonVars =  {}
-PTSF.addonVars.addonRealVersion			= 1.10
+PTSF.addonVars.addonRealVersion			= 1.20
 PTSF.addonVars.addonRealVersionPreText  = "" --Release is empty string. Pre-Release = "PR " and Release Candicate = "RC "
 PTSF.addonVars.addonSavedVarsVersion	= 1.00
 PTSF.addonVars.addonSavedVarsModeVersion= 1.00
@@ -53,6 +53,7 @@ local isPlayingPotionCooldownEnded			= false --This way we make sure we're not c
 local isPotionOnCooldown					= false --1.09, for accessibility
 local PlaySoundLockDelay					= 1000	 --1000ms delay should be enough yet accurate
 local isLowHealthCondition					= false
+local isLowUltimateCondition			    = false
 --local isLowHealthConditionQSlotSelected		= false --Triggers when low health condition is reached and has pot qty and can use pot
 local isLowStaminaCondition					= false
 --local isLowStaminaConditionQSlotSelected	= false
@@ -64,6 +65,7 @@ local quickSlotsOrder 						= {[1] = 4,[2] = 3,[3] = 2,[4] = 1,[5] = 8,[6] = 7,[
 --Used in code only
 local lowResourcesEventsRegistered			= false
 local lowHealthUnconditionTimer				= 0 --Timer object
+local lowUltimateUnconditionTimer			= 0 --Timer object
 local lowStaminaUnconditionTimer			= 0 --Timer object
 local lowMagickaUnconditionTimer			= 0 --Timer object
 
@@ -280,6 +282,18 @@ function PTSF.PlaySound(category)
 --		else
 --			PTSF.D("PlaySound didn't find any sound to play (code: 5002)")
 		end
+	elseif (category == PTSF.soundCategoryLowUltimate) then                             --"LowUltimate") then --new 1.20
+--		PTSF.D("PlaySound category is "..category)
+		if(settings.lowUltimateSound > 2 and SOUNDS[PTSF.sounds[settings.lowUltimateSound]]) then -- ~= nil
+			sound = SOUNDS[PTSF.sounds[settings.lowUltimateSound]]
+			volume = settings.lowUltimateVolumeBoost
+--			PTSF.D("PlaySound sound="..sound.." volume="..volume)
+		elseif(settings.lowUltimateSound == 2) then
+--		    PTSF.D("PlaySound sound is muted")
+			return --No sound to play
+--		else
+--			PTSF.D("PlaySound didn't find any sound to play (code: 5002)")
+		end
 	elseif(category == PTSF.soundCategoryLowStamina) then --"LowStamina") then --new 1.08
 --		PTSF.D("PlaySound category is "..category)
 		if(settings.lowStaminaSound > 2 and SOUNDS[PTSF.sounds[settings.lowStaminaSound]]) then -- ~= nil
@@ -381,7 +395,7 @@ function PTSF.register_or_unregister_low_resources_events()
 		return
 	end
 	
-	if(settings.lowHealthPercent > 0 or settings.lowStaminaPercent > 0 or settings.lowMagickaPercent > 0) then
+	if(settings.lowHealthPercent > 0 or settings.lowUltimatePercent > 0 or settings.lowStaminaPercent > 0 or settings.lowMagickaPercent > 0) then
 		if(not lowResourcesEventsRegistered) then
 			PTSF.D("Registered Low Resources Events")
 			lowResourcesEventsRegistered = true
@@ -447,10 +461,10 @@ function PTSF.EFFECT_CHANGED(eventCode, changeType, effectSlot, effectName, unit
 --
 if(unitTag == "player") then
 	if buffsFinder then
-		potionCooldown_ms = PTSF.GetPotionSlotCooldown(PTSF.debug)
+		local potionCooldown_ms = PTSF.GetPotionSlotCooldown(PTSF.debug)
 		if(tookPotionCheck ~= 0 and potionCooldown_ms > 14000 and string.find(iconName, "achievement") == nil and string.find(effectName, "Dodge Fatigue") == nil) then --We filter to not display achievement buffs nor dodge fatique (roll dodged then used a potion)
 			counter = counter + 1
-			textColor = "|cFF0000-> "..abilityId.." <-|r"
+			local textColor = "|cFF0000-> "..abilityId.." <-|r"
 			if(PTSF.buffs_abilityIds[abilityId]) then
 				textColor = "|c00FF00"..abilityId --"|c00FF00|l0:1:0:-25%:2:000000|l"..abilityId.."|l"
 			end
@@ -460,7 +474,7 @@ if(unitTag == "player") then
 	end
 	
 	if(baseGamePotionTakenSchedule ~= 0 and baseGamePotionTakenTriggered) then -- and potionInventoryItemUsed) then --KNOWN issue: If they have random free pot in CP (Liquid efficiency), sound will not play when free. Bypassing INVENTORY_ITEM_USED SHOULD fix it w/o breaking the addon
-		potionCooldown_ms = PTSF.GetPotionSlotCooldown(PTSF.debug)
+		local potionCooldown_ms = PTSF.GetPotionSlotCooldown(PTSF.debug)
 		--PTSF.D("EFFECT_CHANGED, cd:"..potionCooldown_ms)
 		if(potionCooldown_ms > 14000) then --Gets called multiple times. second false positive has dodge fatigue's cd in potion cd?!? So, cd >= 14000 should always work...
 			--debugLogicMsg = debugLogicMsg.."=>3-pEC: yS cd:"..potionCooldown_ms
@@ -601,7 +615,53 @@ function PTSF.PowerUpdate(eventType, unitTag, powerIndex, powerType, powerValue,
 			end
 			--lowHealthUnconditionTimer = zo_callLater(function() isLowHealthCondition = false end, lowHealthUnconditionDelay)
 		end
-	elseif(powerType == 4 and settings.lowStaminaPercent > 0) then
+    elseif (powerType == COMBAT_MECHANIC_FLAGS_ULTIMATE and settings.lowUltimatePercent > 0) then
+		powerValue, _, _ = GetUnitPower("player", COMBAT_MECHANIC_FLAGS_ULTIMATE);
+		percent = 100 * powerValue / 500 --500 is the max ultimate value
+		if (percent <= settings.lowUltimatePercent) then
+			if (not isLowUltimateCondition and lowUltimateUnconditionTimer == 0) then
+				--				PTSF.D("Low Ultimate: "..percent.."%")
+				if (settings.TTC_lowUltEnable) then
+					PTSF.DA(settings.TTC_lowUltText .. " " .. PTSF.round(percent) .. "%", true);
+				end
+				PTSF.PlaySound(PTSF.soundCategoryLowUltimate) --"LowUltimate")
+				--GetSlotItemCount(quickSlotsOrder[settings.lowHealthAutoSlot], HOTBAR_CATEGORY_QUICKSLOT_WHEEL) --Decided to auto-quickslot anyway
+				if (settings.lowUltimateAutoSlot > 0 and GetCurrentQuickslot() ~= quickSlotsOrder[settings.lowUltimateAutoSlot]) then
+					SetCurrentQuickslot(quickSlotsOrder[settings.lowUltimateAutoSlot])
+					if (settings.TTC_AutoQuickslottedPotionEnable) then
+						if (isPotionOnCooldown) then
+							PTSF.DA(settings.TTC_lowUltText .. " " .. settings.TTC_AutoQuickslottedPotionNotRdyText, true);
+						else
+							PTSF.DA(settings.TTC_lowUltText .. " " .. settings.TTC_AutoQuickslottedPotionRdyText, false);
+						end
+					end
+					if (settings.lowUltimateSound == 2) then --Play only when we don't have a sound 2=Disabled
+						PlaySound("ABILITY_SLOTTED") --base game doesn't play sound when auto-quickslotted. We don't really hear it when a sound is also selected to play, but makes sense when no sound
+						PlaySound("ABILITY_SLOTTED") --boost the volume a bit
+						PlaySound("ABILITY_SLOTTED") --boost the volume a bit more
+						PlaySound("ABILITY_SLOTTED") --boost the volume even more
+						PlaySound("ABILITY_SLOTTED") --boost the volume un peu plus
+						PlaySound("ABILITY_SLOTTED") --boost the volume encore plus
+						PlaySound("ABILITY_SLOTTED") --boost the volume so we hear it!
+					end
+				end
+				isLowUltimateCondition = true
+				lowUltimateUnconditionTimer = zo_callLater(function() lowUltimateUnconditionTimer = 0 end,
+					settings.isOKUltimateRepeatDelay * 1000)                                                                        --Prevent repeating this for lowHealthUnconditionDelay ms. Like, user sets 50% HP. user gets down to 50% (sound), then 52%, then down to 46% (sound again)
+			end
+		else
+			--if(lowUltimateUnconditionTimer ~= 0) then
+			--	EVENT_MANAGER:UnregisterForUpdate(lowUltimateUnconditionTimer)
+			--end
+			if (percent >= settings.isOKUltimatePercent) then --Prevent repeating this too much by adding some % to get out of low condition.
+				if (isLowUltimateCondition and settings.TTC_UltRecoveredEnable) then
+					PTSF.DA(settings.TTC_UltRecoveredText .. " " .. PTSF.round(percent) .. "%", false);
+				end
+				isLowUltimateCondition = false
+			end
+			--lowUltimateUnconditionTimer = zo_callLater(function() isLowUltimateCondition = false end, lowUltimateUnconditionDelay)
+		end
+	elseif (powerType == 4 and settings.lowStaminaPercent > 0) then
 		percent = 100*powerValue/powerMax
 		if(percent <= settings.lowStaminaPercent) then
 			if(not isLowStaminaCondition and lowStaminaUnconditionTimer == 0) then
